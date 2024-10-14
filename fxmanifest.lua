@@ -7,7 +7,6 @@ version '0.0.0'
 
 server_scripts {
     'server/*.lua',
-    '@oxmysql/lib/MySQL.lua'
 }
 
 shared_scripts {
@@ -17,6 +16,3 @@ shared_scripts {
 client_scripts {
     'client/*.lua'
 }
-
-
-lua54 'yes'

@@ -22,28 +22,19 @@ AddEventHandler('BGS_Mapshare:server:Handleshare', function(tgt, coords, distric
         local info = {coords = coords, district = district}
         if Framework == "VORP" then
             VORPInv.addItem(_src, Config.MapItemName, 1, info)
-            VORPCore.NotifyTip(_src, Config.Text["ReceivedMapItem"], 4000)
+            VORPCore.NotifyTip(_src, Config.Text.receivedMapItem, 4000)
         elseif Framework == "RSG" then
             local Player = RSGCore.Functions.GetPlayer(_src)
             Player.Functions.AddItem(Config.MapItemName, 1, false, info)
-            TriggerClientEvent('RSGCore:Notify', _src, Config.Text["ReceivedMapItem"], "success", 4000)
+            TriggerClientEvent('RSGCore:Notify', _src, Config.Text.receivedMapItem, "success", 4000)
         end
-    else
-        if _src == _tgt then
-            if Framework == "VORP" then
-                VORPCore.NotifyTip(_src, Config.Text["sameID"], 4000)
-            elseif Framework == "RSG" then
-                TriggerClientEvent('RSGCore:Notify', _src, Config.Text["sameID"], "error", 4000)
-            end
-            return
-        end
-        
+    else  
         if Framework == "VORP" then
-            VORPCore.NotifyTip(_src, Config.Text["SendMapLoc"].._tgt, 4000)
-            VORPCore.NotifyTip(_tgt, Config.Text["GetMapLoc"].._src, 4000)
+            VORPCore.NotifyTip(_src, Config.Text.sendMapLoc, 4000)
+            VORPCore.NotifyTip(_tgt, string.format(Config.Text.getMapLoc, district), 4000)
         elseif Framework == "RSG" then
-            TriggerClientEvent('RSGCore:Notify', _src, Config.Text["SendMapLoc"].._tgt, "primary", 4000)
-            TriggerClientEvent('RSGCore:Notify', _tgt, Config.Text["GetMapLoc"].._src, "primary", 4000)
+            TriggerClientEvent('RSGCore:Notify', _src, Config.Text.sendMapLoc, "primary", 4000)
+            TriggerClientEvent('RSGCore:Notify', _tgt, string.format(Config.Text.getMapLoc, district), "primary", 4000)
         end
         
         TriggerClientEvent('BGS_Mapshare:client:Received', _tgt, coords, district)
@@ -58,7 +49,7 @@ if Config.MapIsItem then
             if metadata and metadata.coords then
                 VORPInv.subItem(_src, Config.MapItemName, 1, metadata)
                 TriggerClientEvent('BGS_Mapshare:client:Received', _src, metadata.coords, metadata.district)
-                VORPCore.NotifyTip(_src, string.format(Config.Text["UseMapItem"], metadata.district), 4000)
+                VORPCore.NotifyTip(_src, string.format(Config.Text.useMapItem, metadata.district), 4000)
             end
         end)
     elseif Framework == "RSG" then
@@ -67,7 +58,7 @@ if Config.MapIsItem then
             if item.info and item.info.coords then
                 Player.Functions.RemoveItem(Config.MapItemName, 1, item.slot)
                 TriggerClientEvent('BGS_Mapshare:client:Received', source, item.info.coords, item.info.district)
-                TriggerClientEvent('RSGCore:Notify', source, string.format(Config.Text["UseMapItem"], item.info.district), "success", 4000)
+                TriggerClientEvent('RSGCore:Notify', source, string.format(Config.Text.useMapItem, item.info.district), "success", 4000)
             end
         end)
     end

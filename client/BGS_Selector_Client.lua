@@ -1,9 +1,15 @@
--- BGS_Selector.lua *//* Wartype
-local CoreObject = nil
-local Config = {
+-- BASE GAME SCRIPTS *//* Wartype *//* https://discord.gg/MyCDwpHWdG
+
+if not BGS_Selector then
+    BGS_Selector = {}
+else
+    return 
+end
+
+BGS_Selector.Config = {
     RaycastDistance = 8.0,
     MarkerSize = vector3(1.0, 1.0, 1.0),
-    MarkerType = 0x94FDAE17,  -- Cylinder marker // https://github.com/femga/rdr3_discoveries/blob/master/graphics/markers/marker_types.lua
+    MarkerType = 0x94FDAE17, --  https://github.com/femga/rdr3_discoveries/blob/master/graphics/markers/marker_types.lua
     Colors = {
         PlayerHighlight = {0, 255, 0, 50},    -- Green for players
         NPCHighlight = {255, 0, 0, 50},       -- Red for NPCs
@@ -28,10 +34,10 @@ local Config = {
 -- Local variables
 local isSelectionActive = false
 local highlightedEntity = nil
-local highlightColor = Config.Colors.NPCHighlight
+local highlightColor = BGS_Selector.Config.Colors.NPCHighlight
 local isPlayerSelected = false
 
-local function rotationToDirection(rotation)
+function BGS_Selector.rotationToDirection(rotation)
     local adjustedRotation = {
         x = (math.pi / 180) * rotation.x,
         y = (math.pi / 180) * rotation.y,
@@ -45,10 +51,10 @@ local function rotationToDirection(rotation)
     return direction
 end
 
-local function rayCastGamePlayCamera(distance)
+function BGS_Selector.rayCastGamePlayCamera(distance)
     local cameraRotation = GetGameplayCamRot()
     local cameraCoord = GetGameplayCamCoord()
-    local direction = rotationToDirection(cameraRotation)
+    local direction = BGS_Selector.rotationToDirection(cameraRotation)
     local destination = {
         x = cameraCoord.x + direction.x * distance,
         y = cameraCoord.y + direction.y * distance,
@@ -58,12 +64,12 @@ local function rayCastGamePlayCamera(distance)
     return hit, endCoords, entityHit
 end
 
-local function HandlePrompts(entity)
+function BGS_Selector.HandlePrompts(entity)
     local promptGroup = GetRandomIntInRange(0, 0xffffff)
 
     local makeSelectionPrompt = PromptRegisterBegin()
-    PromptSetControlAction(makeSelectionPrompt, Config.Prompts.MakeSelection.Control)
-    PromptSetText(makeSelectionPrompt, CreateVarString(10, "LITERAL_STRING", Config.Prompts.MakeSelection.Text))
+    PromptSetControlAction(makeSelectionPrompt, BGS_Selector.Config.Prompts.MakeSelection.Control)
+    PromptSetText(makeSelectionPrompt, CreateVarString(10, "LITERAL_STRING", BGS_Selector.Config.Prompts.MakeSelection.Text))
     PromptSetEnabled(makeSelectionPrompt, true)
     PromptSetVisible(makeSelectionPrompt, true)
     PromptSetHoldMode(makeSelectionPrompt, true)
@@ -71,8 +77,8 @@ local function HandlePrompts(entity)
     PromptRegisterEnd(makeSelectionPrompt)
 
     local cancelPrompt = PromptRegisterBegin()
-    PromptSetControlAction(cancelPrompt, Config.Prompts.Cancel.Control)
-    PromptSetText(cancelPrompt, CreateVarString(10, "LITERAL_STRING", Config.Prompts.Cancel.Text))
+    PromptSetControlAction(cancelPrompt, BGS_Selector.Config.Prompts.Cancel.Control)
+    PromptSetText(cancelPrompt, CreateVarString(10, "LITERAL_STRING", BGS_Selector.Config.Prompts.Cancel.Text))
     PromptSetEnabled(cancelPrompt, true)
     PromptSetVisible(cancelPrompt, true)
     PromptSetHoldMode(cancelPrompt, true)
@@ -87,7 +93,7 @@ local function HandlePrompts(entity)
         local targetCoords = GetEntityCoords(entity)
         local distance = #(playerCoords - targetCoords)
 
-        if distance <= Config.RaycastDistance then
+        if distance <= BGS_Selector.Config.RaycastDistance then
             local promptName = CreateVarString(10, "LITERAL_STRING", "Player Actions")
             PromptSetActiveGroupThisFrame(promptGroup, promptName)
 
@@ -108,8 +114,8 @@ local function HandlePrompts(entity)
         end
 
         local entityCoords = GetEntityCoords(entity)
-        DrawMarker(Config.MarkerType, entityCoords.x, entityCoords.y, entityCoords.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
-                   Config.MarkerSize.x, Config.MarkerSize.y, Config.MarkerSize.z, 
+        DrawMarker(BGS_Selector.Config.MarkerType, entityCoords.x, entityCoords.y, entityCoords.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+                   BGS_Selector.Config.MarkerSize.x, BGS_Selector.Config.MarkerSize.y, BGS_Selector.Config.MarkerSize.z, 
                    highlightColor[1], highlightColor[2], highlightColor[3], highlightColor[4], 
                    false, false, 2, false, nil, nil, false)
     end
@@ -118,25 +124,25 @@ local function HandlePrompts(entity)
     PromptDelete(cancelPrompt)
 end
 
-local function StartSelection()
+function BGS_Selector.StartSelection()
     isSelectionActive = true
     isPlayerSelected = false
     
     local promptGroup = GetRandomIntInRange(0, 0xffffff)
 
     local selectPlayerPrompt = PromptRegisterBegin()
-    PromptSetControlAction(selectPlayerPrompt, Config.Prompts.SelectPlayer.Control)
-    PromptSetText(selectPlayerPrompt, CreateVarString(10, "LITERAL_STRING", Config.Prompts.SelectPlayer.Text))
-    PromptSetEnabled(selectPlayerPrompt, false)  -- Start with the prompt disabled
-    PromptSetVisible(selectPlayerPrompt, true)   -- Always keep the prompt visible
+    PromptSetControlAction(selectPlayerPrompt, BGS_Selector.Config.Prompts.SelectPlayer.Control)
+    PromptSetText(selectPlayerPrompt, CreateVarString(10, "LITERAL_STRING", BGS_Selector.Config.Prompts.SelectPlayer.Text))
+    PromptSetEnabled(selectPlayerPrompt, false) 
+    PromptSetVisible(selectPlayerPrompt, true)
     PromptSetHoldMode(selectPlayerPrompt, true)
     PromptSetGroup(selectPlayerPrompt, promptGroup)
     PromptRegisterEnd(selectPlayerPrompt)
     
     local cancelPrompt = PromptRegisterBegin()
-    PromptSetControlAction(cancelPrompt, Config.Prompts.Cancel.Control)
-    PromptSetText(cancelPrompt, CreateVarString(10, "LITERAL_STRING", Config.Prompts.Cancel.Text))
-    PromptSetEnabled(cancelPrompt, true)  -- Always enabled
+    PromptSetControlAction(cancelPrompt, BGS_Selector.Config.Prompts.Cancel.Control)
+    PromptSetText(cancelPrompt, CreateVarString(10, "LITERAL_STRING", BGS_Selector.Config.Prompts.Cancel.Text))
+    PromptSetEnabled(cancelPrompt, true)
     PromptSetVisible(cancelPrompt, true)
     PromptSetHoldMode(cancelPrompt, true)
     PromptSetGroup(cancelPrompt, promptGroup)
@@ -145,45 +151,30 @@ local function StartSelection()
     while isSelectionActive do
         Citizen.Wait(0)
         if not isPlayerSelected then
-            local hit, endCoords, entityHit = rayCastGamePlayCamera(Config.RaycastDistance)
+            local hit, endCoords, entityHit = BGS_Selector.rayCastGamePlayCamera(BGS_Selector.Config.RaycastDistance)
             
             local isLookingAtPlayer = false
             if hit == 1 and DoesEntityExist(entityHit) and IsEntityAPed(entityHit) and IsPedAPlayer(entityHit) then
                 isLookingAtPlayer = true
-                highlightColor = Config.Colors.PlayerHighlight
+                highlightColor = BGS_Selector.Config.Colors.PlayerHighlight
                 highlightedEntity = entityHit
                 local entityCoords = GetEntityCoords(entityHit)
-                DrawMarker(Config.MarkerType, entityCoords.x, entityCoords.y, entityCoords.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
-                           Config.MarkerSize.x, Config.MarkerSize.y, Config.MarkerSize.z, 
+                DrawMarker(BGS_Selector.Config.MarkerType, entityCoords.x, entityCoords.y, entityCoords.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+                           BGS_Selector.Config.MarkerSize.x, BGS_Selector.Config.MarkerSize.y, BGS_Selector.Config.MarkerSize.z, 
                            highlightColor[1], highlightColor[2], highlightColor[3], highlightColor[4], 
                            false, false, 2, false, nil, nil, false)
-
-                            -- Enable for NPCs 
-                            --          |   
-                            --          v
-            -- elseif hit == 1 and DoesEntityExist(entityHit) and IsEntityAPed(entityHit) then
-            --     highlightColor = Config.Colors.NPCHighlight
-            --     highlightedEntity = entityHit
-            --     local entityCoords = GetEntityCoords(entityHit)
-            --     DrawMarker(Config.MarkerType, entityCoords.x, entityCoords.y, entityCoords.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
-            --                Config.MarkerSize.x, Config.MarkerSize.y, Config.MarkerSize.z, 
-            --                highlightColor[1], highlightColor[2], highlightColor[3], highlightColor[4], 
-            --                false, false, 2, false, nil, nil, false)
             else
                 highlightedEntity = nil
             end
 
-            -- Enable or disable the prompt based on whether we're looking at a player
             PromptSetEnabled(selectPlayerPrompt, isLookingAtPlayer)
-
-            -- Always display the prompt group
             local promptName = CreateVarString(10, "LITERAL_STRING", "Select Player")
             PromptSetActiveGroupThisFrame(promptGroup, promptName)
 
             if isLookingAtPlayer and PromptHasHoldModeCompleted(selectPlayerPrompt) then
                 isPlayerSelected = true
-                highlightColor = Config.Colors.SelectedHighlight
-                local result = HandlePrompts(entityHit)
+                highlightColor = BGS_Selector.Config.Colors.SelectedHighlight
+                local result = BGS_Selector.HandlePrompts(entityHit)
                 PromptDelete(selectPlayerPrompt)
                 PromptDelete(cancelPrompt)
                 return result
@@ -201,34 +192,34 @@ local function StartSelection()
     return nil
 end
 
-RegisterNetEvent("BGS_Selector:Start")
-AddEventHandler("BGS_Selector:Start", function(cb)
+BGS_Selector.TriggerSelection = function(callback)
     if not isSelectionActive then
-        local result = StartSelection()
-        cb(result)
+        local result = BGS_Selector.StartSelection()
+        if callback then
+            callback(result)
+        end
+        return result
     else
-        cb(false)
+        if callback then
+            callback(false)
+        end
+        return false
     end
-end)
+end
 
 -- Test command
+--[[
 RegisterCommand("testray", function(source, args, rawCommand)
-    if not isSelectionActive then
-        TriggerEvent('chat:addMessage', {args = {"^3BGS Selector: Please select a player."}})
-        TriggerEvent("BGS_Selector:Start", function(result)
-            if result then
-                if type(result) == "number" then
-                    TriggerEvent('chat:addMessage', {args = {"^2BGS Selector: Selected player's Server ID: " .. result}})
-                else
-                    TriggerEvent('chat:addMessage', {args = {"^1BGS Selector: Selection failed."}})
-                end
+    BGS_Selector.TriggerSelection(function(result)
+        if result then
+            if type(result) == "number" then
+                TriggerEvent('chat:addMessage', {args = {"^2BGS Selector: Selected player's Server ID: " .. result}})
             else
-                TriggerEvent('chat:addMessage', {args = {"^1BGS Selector: Selection cancelled or no player selected."}})
+                TriggerEvent('chat:addMessage', {args = {"^1BGS Selector: Selection failed."}})
             end
-        end)
-    else
-        TriggerEvent('chat:addMessage', {args = {"^1BGS Selector: Selection is already active."}})
-    end
+        else
+            TriggerEvent('chat:addMessage', {args = {"^1BGS Selector: Selection cancelled or no player selected."}})
+        end
+    end)
 end, false)
-
--- print("BGS_Selector loaded. Use /testray to test the player selection.")
+--]]
